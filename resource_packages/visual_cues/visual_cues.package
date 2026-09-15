@@ -1,0 +1,11 @@
+mod = [
+    "visual_cues"
+]
+
+package = [
+    "resource_packages/visual_cues/visual_cues"
+]
+
+lua = [
+    "scripts/mods/visual_cues/*"
+]
