@@ -169,7 +169,7 @@ return {
     },
     announce_hordes_tooltip = {
         en =
-        "Announces a horde when the game plays its horde stinger, the sound that already signals an incoming horde. Nothing is announced for a horde that spawns silently, or for one far enough away that its stinger is out of earshot.",
+        "Announces a horde when the game's combat music turns to horde music, and when it plays a horde stinger within earshot. Nothing is announced for a horde the game gives you no audible warning about.",
     },
     horde_cooldown = {
         en = "Horde cooldown",

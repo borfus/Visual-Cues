@@ -305,6 +305,20 @@ local function within_earshot_of(position)
     return Vector3.distance(player_position, position) <= max_hear_distance()
 end
 
+local function announce_horde()
+    if mod:get("announce_hordes") ~= true then
+        return
+    end
+
+    -- one horde can announce itself through more than one cue.
+    -- use a cooldown to avoid duplicate alerts
+    if on_cooldown("horde", mod:get("horde_cooldown") or 30) then
+        return
+    end
+
+    announce("horde", mod:localize("horde_notification_text"))
+end
+
 local function handle_horde_stinger(stinger_name, position)
     if mod:get("announce_hordes") ~= true then
         return
@@ -320,12 +334,7 @@ local function handle_horde_stinger(stinger_name, position)
         return
     end
 
-    -- a single wave can play its stinger more than once so we use a cooldown
-    if on_cooldown("horde", mod:get("horde_cooldown") or 30) then
-        return
-    end
-
-    announce("horde", mod:localize("horde_notification_text"))
+    announce_horde()
 end
 
 local function sound_event_name(sound_id)
@@ -340,6 +349,35 @@ end)
 
 mod:hook_safe("AudioSystem", "rpc_server_audio_event_at_pos", function(self, channel_id, sound_id, position)
     handle_horde_stinger(sound_event_name(sound_id), position)
+end)
+
+local HORDE_MUSIC_STATES = {
+    ambush = true,
+    horde = true,
+    horde_beastmen = true,
+    horde_chaos = true,
+    pre_ambush = true,
+    pre_ambush_beastmen = true,
+    pre_ambush_chaos = true,
+    pre_horde = true,
+}
+
+local last_game_state
+
+local function handle_music_state(group, value)
+    if group ~= "game_state" or value == last_game_state then
+        return
+    end
+
+    last_game_state = value
+
+    if HORDE_MUSIC_STATES[value] then
+        announce_horde()
+    end
+end
+
+mod:hook_safe("Music", "set_group_state", function(self, group, value)
+    handle_music_state(group, value)
 end)
 
 -- incoming attack warning
