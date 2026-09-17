@@ -21,10 +21,10 @@ Level-specific Lords (Bodvarr, Halescourge, Rasknitt, etc.) are intentionally no
 
 Nothing is ever sent to other players. Every notification is local to your client.
 
-Monsters and specials are announced only once they are within the game's own "earshot" distance 
-(`DialogueSettings.special_proximity_distance_heard`, read at runtime). Hordes are announced on 
-the game's horde stinger, and only when it plays within earshot. The attack marker mirrors the 
-backstab warning sound and never appears for an attack the game did not already warn you about.
+Monsters are announced when their spawn queue sounds. Specials are announced only once they are within the game's 
+own "earshot" distance (`DialogueSettings.special_proximity_distance_heard`, read at runtime). Hordes are announced 
+on the game's horde stinger. The attack marker mirrors the backstab warning sound and never appears for an attack 
+the game did not already warn you about.
 
 ## Notification categories
 
