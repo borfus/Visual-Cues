@@ -164,40 +164,24 @@ local function special_units_broadphase()
     return system and system.special_units_broadphase
 end
 
+-- specials only
 local function handle_nearby_unit(unit)
     local breed = Unit.get_data(unit, "breed")
     local breed_name = breed and breed.name
+    local special = breed_name and SPECIALS[breed_name]
 
-    if not breed_name then
-        return
-    end
-
-    local monster = MONSTERS[breed_name]
-    local special = not monster and SPECIALS[breed_name]
-    local entry = monster or special
-
-    if not entry then
+    if not special then
         return
     end
 
     -- mark it either way so that turning a setting on mid-run cannot announce something already near you
     announced_units[unit] = true
 
-    if monster then
-        if mod:get(entry.setting_id) == false then
-            return
-        end
-
-        announce("boss", mod:localize("notification_text", entry.display_name))
-
+    if mod:get("announce_specials") == false or mod:get(special.setting_id) == false then
         return
     end
 
-    if mod:get("announce_specials") == false or mod:get(entry.setting_id) == false then
-        return
-    end
-
-    announce("special", mod:localize("notification_text", entry.display_name))
+    announce("special", mod:localize("notification_text", special.display_name))
 end
 
 local function scan_for_nearby_enemies()
@@ -382,8 +366,45 @@ local function handle_music_state(group, value)
     end
 end
 
+local BOSS_MUSIC_STATES = {
+    rat_ogre = "skaven_rat_ogre",
+    stormfiend = "skaven_stormfiend",
+    chaos_spawn = "chaos_spawn",
+    troll = "chaos_troll",
+    minotaur = "beastmen_minotaur",
+}
+
+local last_boss_state
+
+local function handle_boss_state(value)
+    if value == last_boss_state then
+        return
+    end
+
+    if debug_logging then
+        mod:info("[VC] music boss_state: %s -> %s", tostring(last_boss_state), tostring(value))
+    end
+
+    last_boss_state = value
+
+    -- "no_boss" and the unmapped Lord states both land here, which also means the
+    -- next monster gets a fresh transition to announce on
+    local breed_name = BOSS_MUSIC_STATES[value]
+    local monster = breed_name and MONSTERS[breed_name]
+
+    if not monster or mod:get(monster.setting_id) == false then
+        return
+    end
+
+    announce("boss", mod:localize("notification_text", monster.display_name))
+end
+
 mod:hook_safe("Music", "set_group_state", function(self, group, value)
-    handle_music_state(group, value)
+    if group == "boss_state" then
+        handle_boss_state(value)
+    else
+        handle_music_state(group, value)
+    end
 end)
 
 -- incoming attack warning
@@ -554,6 +575,7 @@ end
 mod.on_game_state_changed = function()
     horde_announced = false
     last_game_state = nil
+    last_boss_state = nil
 end
 
 mod.on_setting_changed = function(setting_id)

@@ -13,7 +13,7 @@ return {
     },
     earshot_range_tooltip = {
         en =
-        "A monster or special is announced once it comes this close to you. The default matches the distance the game itself treats as within earshot, which is also the highest this can be set. Lower it if you only want warnings about things that are almost on top of you.",
+        "A special is announced once it comes this close to you. The default matches the distance the game itself treats as within earshot, which is also the highest this can be set. Lower it if you only want warnings about things that are almost on top of you. Monsters ignore this, because their boss music announces them however far away they are.",
     },
 
     debug_logging = {
