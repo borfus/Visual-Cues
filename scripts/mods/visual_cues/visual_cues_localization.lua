@@ -16,6 +16,13 @@ return {
         "A monster or special is announced once it comes this close to you. The default matches the distance the game itself treats as within earshot, which is also the highest this can be set. Lower it if you only want warnings about things that are almost on top of you.",
     },
 
+    debug_logging = {
+        en = "Log detected cues",
+    },
+    debug_logging_tooltip = {
+        en = "Writes extra details to the log. Only useful for diagnosing. Disable this when playing normally.",
+    },
+
     -- notification settings
     notification_settings = {
         en = "Notification",
@@ -48,22 +55,19 @@ return {
         en = "Horizontal position",
     },
     hud_offset_x_tooltip = {
-        en =
-        "Offset of the screen notification from the centre of the screen. Negative values move it left, positive values move it right.",
+        en = "Offset of the screen notification from the centre of the screen.",
     },
     hud_offset_y = {
         en = "Vertical position",
     },
     hud_offset_y_tooltip = {
-        en =
-        "Height of the screen notification above the centre of the screen. Lower the value to move it down, or go negative to place it below the crosshair.",
+        en = "Height of the screen notification above the centre of the screen",
     },
     chat_enabled = {
         en = "Show chat announcement",
     },
     chat_enabled_tooltip = {
-        en =
-        "Also prints the announcement in your chat log, for example [BOSS] Rat Ogre nearby! The message is written to your own chat log only and is never sent to the party.",
+        en = "Also prints the announcement in your chat log, for example [BOSS] Rat Ogre nearby!",
     },
 
     -- monster settings
@@ -74,31 +78,31 @@ return {
         en = "Rat Ogre",
     },
     announce_rat_ogre_tooltip = {
-        en = "Announce a Rat Ogre within earshot.",
+        en = "Announce Rat Ogres.",
     },
     announce_stormfiend = {
         en = "Stormfiend",
     },
     announce_stormfiend_tooltip = {
-        en = "Announce a Stormfiend within earshot.",
+        en = "Announce Stormfiends.",
     },
     announce_chaos_spawn = {
         en = "Spawn of Chaos",
     },
     announce_chaos_spawn_tooltip = {
-        en = "Announce a Spawn of Chaos within earshot.",
+        en = "Announce Chaos Spawns.",
     },
     announce_bile_troll = {
         en = "Bile Troll",
     },
     announce_bile_troll_tooltip = {
-        en = "Announce a Bile Troll within earshot.",
+        en = "Announce Bile Trolls.",
     },
     announce_minotaur = {
         en = "Minotaur",
     },
     announce_minotaur_tooltip = {
-        en = "Announce a Minotaur within earshot.",
+        en = "Announce Minotaurs.",
     },
 
     -- special settings
@@ -109,55 +113,56 @@ return {
         en = "Announce specials",
     },
     announce_specials_tooltip = {
-        en = "Announces special enemies once they come within earshot. Each one is announced at most once.",
+        en =
+        "Announces special enemies. Each type is announced at most once even when multiple are spawned at a given moment.",
     },
     announce_leech = {
         en = "Leech",
     },
     announce_leech_tooltip = {
-        en = "Announce a Leech (Corruptor Sorcerer) within earshot.",
+        en = "Announce Leeches.",
     },
     announce_gutter_runner = {
         en = "Gutter Runner",
     },
     announce_gutter_runner_tooltip = {
-        en = "Announce a Gutter Runner (Assassin) within earshot.",
+        en = "Announce Gutter Runners.",
     },
     announce_pack_master = {
         en = "Packmaster",
     },
     announce_pack_master_tooltip = {
-        en = "Announce a Packmaster within earshot.",
+        en = "Announce Packmasters.",
     },
     announce_ratling_gunner = {
         en = "Ratling Gunner",
     },
     announce_ratling_gunner_tooltip = {
-        en = "Announce a Ratling Gunner within earshot.",
+        en = "Announce Ratling Gunners.",
     },
     announce_warpfire_thrower = {
         en = "Warpfire Thrower",
     },
     announce_warpfire_thrower_tooltip = {
-        en = "Announce a Warpfire Thrower within earshot.",
+        en = "Announce Warpfire Throwers.",
     },
     announce_globadier = {
         en = "Globadier",
     },
     announce_globadier_tooltip = {
-        en = "Announce a Poison Wind Globadier within earshot.",
+        en = "Announce Globadiers.",
     },
     announce_blightstormer = {
         en = "Blightstormer",
     },
     announce_blightstormer_tooltip = {
-        en = "Announce a Blightstormer (Vortex Sorcerer) within earshot.",
+        en = "Announce Blightstormers.",
     },
     announce_standard_bearer = {
         en = "Standard Bearer",
     },
     announce_standard_bearer_tooltip = {
-        en = "Announce a Beastmen Standard Bearer within earshot.",
+        en = "Announce Standard Bearers.",
     },
 
     -- horde settings
@@ -168,15 +173,7 @@ return {
         en = "Announce hordes",
     },
     announce_hordes_tooltip = {
-        en =
-        "Announces a horde when the game's combat music turns to horde music, and when it plays a horde stinger within earshot. Nothing is announced for a horde the game gives you no audible warning about.",
-    },
-    horde_cooldown = {
-        en = "Horde cooldown",
-    },
-    horde_cooldown_tooltip = {
-        en =
-        "Minimum time between horde announcements, so a wave that plays its stinger more than once is only announced once.",
+        en = "Announces hordes. Nothing is announced for a horde the game gives you no audible warning about.",
     },
 
     -- incoming attack warning
@@ -187,8 +184,7 @@ return {
         en = "Show incoming attack marker",
     },
     warning_enabled_tooltip = {
-        en =
-        "Flashes a red exclamation mark on screen whenever the game plays you its backstab warning sound, as a visual companion to that sound. It never appears for an attack the game did not already warn you about.",
+        en = "Flashes a red exclamation mark on screen whenever the game plays you its backstab warning sound.",
     },
     warning_duration = {
         en = "Duration",
@@ -206,8 +202,7 @@ return {
         en = "Horizontal position",
     },
     warning_offset_x_tooltip = {
-        en =
-        "Offset from the centre of the screen. Negative values move it left, positive values move it right.",
+        en = "Offset from the centre of the screen. Negative values move it left, positive values move it right.",
     },
     warning_offset_y = {
         en = "Vertical position",

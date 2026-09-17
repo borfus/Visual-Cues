@@ -18,6 +18,12 @@ return {
                         unit_text = "m",
                         tooltip = "earshot_range_tooltip",
                     },
+                    {
+                        setting_id = "debug_logging",
+                        type = "checkbox",
+                        default_value = false,
+                        tooltip = "debug_logging_tooltip",
+                    },
                 },
             },
             {
@@ -179,16 +185,6 @@ return {
                         type = "checkbox",
                         default_value = true,
                         tooltip = "announce_hordes_tooltip",
-                        sub_widgets = {
-                            {
-                                setting_id = "horde_cooldown",
-                                type = "numeric",
-                                default_value = 30,
-                                range = { 5, 120 },
-                                unit_text = "s",
-                                tooltip = "horde_cooldown_tooltip",
-                            },
-                        },
                     },
                 },
             },

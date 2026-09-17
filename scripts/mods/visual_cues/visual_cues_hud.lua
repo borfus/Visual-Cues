@@ -123,7 +123,6 @@ end
 VisualCuesHud = class(VisualCuesHud)
 
 VisualCuesHud.init = function(self, parent, ingame_ui_context)
-    self._parent = parent
     self._ui_renderer = ingame_ui_context.ui_renderer
     self._input_manager = ingame_ui_context.input_manager
     self._render_settings = { snap_pixel_positions = true }

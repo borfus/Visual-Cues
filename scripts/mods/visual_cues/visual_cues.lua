@@ -3,12 +3,18 @@ local mod = get_mod("visual_cues")
 local Unit = Unit
 local Broadphase = Broadphase
 local Managers = Managers
-local Vector3 = Vector3
 local pairs = pairs
 local math = math
 local string = string
 local table = table
+local tostring = tostring
 local type = type
+
+local debug_logging = false
+
+local function refresh_debug_logging()
+    debug_logging = mod:get("debug_logging") == true
+end
 
 dofile("scripts/mods/visual_cues/visual_cues_hud")
 
@@ -82,33 +88,7 @@ local CATEGORIES = {
     horde = { prefix = "[HORDE]", color = { 255, 255, 96, 96 } },
 }
 
-local function game_time()
-    local success, t = pcall(function()
-        return Managers.time:time("game")
-    end)
-
-    return success and t or nil
-end
-
-local cooldowns = {}
-
-local function on_cooldown(key, seconds)
-    local t = game_time()
-
-    if not t then
-        return false
-    end
-
-    local ready_at = cooldowns[key]
-
-    if ready_at and t < ready_at then
-        return true
-    end
-
-    cooldowns[key] = t + seconds
-
-    return false
-end
+local horde_announced = false
 
 local function show_hud_notification(text, color)
     if mod:get("hud_enabled") == false then
@@ -158,7 +138,6 @@ local SCAN_INTERVAL = 0.5
 local scan_timer = 0
 local broadphase_result = {}
 
--- weak keys prevent this table from keeping old game units alive
 local announced_units = setmetatable({}, { __mode = "k" })
 
 local function engine_earshot_range()
@@ -167,7 +146,6 @@ local function engine_earshot_range()
     return settings and settings.special_proximity_distance_heard or ENGINE_EARSHOT_FALLBACK
 end
 
--- earshot range setting can only be shortened, never widened past what the game itself treats as audible.
 local function earshot_range()
     local engine_range = engine_earshot_range()
 
@@ -273,82 +251,98 @@ local HORDE_STINGERS = {
     enemy_horde_chaos_stinger = true,
     enemy_horde_beastmen_stinger = true,
     enemy_horde_stingers_plague_monk = true,
+    enemy_terror_event_stinger = true,
+    Play_wave_start_spawn_stinger = true,
+    Play_wave_start_spawn_stinger_small = true,
 }
-
--- the horde stinger is positional, played at the epicentre, so one spawning
--- far across the level makes a sound this client cannot actually hear.
-local MAX_HEAR_FALLBACK = 40
-
-local function max_hear_distance()
-    local settings = rawget(_G, "DialogueSettings")
-
-    return settings and settings.max_hear_distance or MAX_HEAR_FALLBACK
-end
-
-local function within_earshot_of(position)
-    if not position then
-        return false
-    end
-
-    local player_unit = local_player_unit()
-
-    if not player_unit or not Unit.alive(player_unit) then
-        return false
-    end
-
-    local player_position = Unit.local_position(player_unit, 0)
-
-    if not player_position then
-        return false
-    end
-
-    return Vector3.distance(player_position, position) <= max_hear_distance()
-end
 
 local function announce_horde()
     if mod:get("announce_hordes") ~= true then
         return
     end
 
-    -- one horde can announce itself through more than one cue.
-    -- use a cooldown to avoid duplicate alerts
-    if on_cooldown("horde", mod:get("horde_cooldown") or 30) then
+    if horde_announced then
+        if debug_logging then
+            mod:info("[VC] horde cue ignored, this horde was already announced")
+        end
+
         return
+    end
+
+    horde_announced = true
+
+    if debug_logging then
+        mod:info("[VC] horde ANNOUNCED")
     end
 
     announce("horde", mod:localize("horde_notification_text"))
 end
 
-local function handle_horde_stinger(stinger_name, position)
-    if mod:get("announce_hordes") ~= true then
-        return
-    end
+local function horde_stinger_matches(stinger_name)
+    return stinger_name ~= nil and HORDE_STINGERS[stinger_name] == true
+end
 
-    if not stinger_name or not HORDE_STINGERS[stinger_name] then
-        return
-    end
-
-    -- checked before the cooldown, so a horde too far away to hear cannot consume
-    -- the cooldown and suppress a later one that is close enough
-    if not within_earshot_of(position) then
+local function handle_horde_stinger(stinger_name)
+    if not horde_stinger_matches(stinger_name) then
         return
     end
 
     announce_horde()
 end
 
-local function sound_event_name(sound_id)
-    local lookup = rawget(_G, "NetworkLookup")
+local sound_events_lookup
 
-    return lookup and lookup.sound_events and lookup.sound_events[sound_id]
+local function sound_event_name(sound_id)
+    if not sound_events_lookup then
+        local lookup = rawget(_G, "NetworkLookup")
+
+        sound_events_lookup = lookup and lookup.sound_events
+
+        if not sound_events_lookup then
+            return nil
+        end
+    end
+
+    return sound_events_lookup[sound_id]
 end
 
 mod:hook_safe("HordeSpawner", "play_sound", function(self, stinger_name, pos)
-    handle_horde_stinger(stinger_name, pos)
+    handle_horde_stinger(stinger_name)
 end)
 
 mod:hook_safe("AudioSystem", "rpc_server_audio_event_at_pos", function(self, channel_id, sound_id, position)
-    handle_horde_stinger(sound_event_name(sound_id), position)
+    handle_horde_stinger(sound_event_name(sound_id))
+end)
+
+local terror_event_mixer = rawget(_G, "TerrorEventMixer")
+local terror_init_functions = terror_event_mixer and terror_event_mixer.init_functions
+
+if terror_init_functions then
+    mod:hook_safe(terror_init_functions, "play_stinger", function(event, element, t)
+        handle_horde_stinger(element.stinger_name or "enemy_terror_event_stinger")
+    end)
+else
+    mod:warning("TerrorEventMixer was unavailable at load, scripted event hordes will not be announced.")
+end
+
+mod:hook_safe("AudioSystem", "rpc_server_audio_position_event", function(self, channel_id, sound_id, position)
+    local stinger_name = sound_event_name(sound_id)
+
+    if debug_logging then
+        mod:info("[VC] positional sound: %s", tostring(stinger_name))
+    end
+
+    handle_horde_stinger(stinger_name)
+end)
+
+mod:hook_safe("AudioSystem", "rpc_server_audio_event", function(self, channel_id, sound_id)
+    local stinger_name = sound_event_name(sound_id)
+
+    if debug_logging then
+        mod:info("[VC] 2d sound: %s", tostring(stinger_name))
+    end
+
+    handle_horde_stinger(stinger_name)
 end)
 
 local HORDE_MUSIC_STATES = {
@@ -365,8 +359,20 @@ local HORDE_MUSIC_STATES = {
 local last_game_state
 
 local function handle_music_state(group, value)
-    if group ~= "game_state" or value == last_game_state then
+    if group ~= "game_state" then
         return
+    end
+
+    if not HORDE_MUSIC_STATES[value] then
+        horde_announced = false
+    end
+
+    if value == last_game_state then
+        return
+    end
+
+    if debug_logging then
+        mod:info("[VC] music game_state: %s -> %s", tostring(last_game_state), tostring(value))
     end
 
     last_game_state = value
@@ -541,6 +547,22 @@ mod:command(
     end
 )
 
+mod.on_all_mods_loaded = function()
+    refresh_debug_logging()
+end
+
+mod.on_game_state_changed = function()
+    horde_announced = false
+    last_game_state = nil
+end
+
+mod.on_setting_changed = function(setting_id)
+    if setting_id == "debug_logging" then
+        refresh_debug_logging()
+    end
+end
+
 mod.on_enabled = function()
+    refresh_debug_logging()
     mod:info("Visual Cues v%s enabled", MOD_VERSION)
 end
